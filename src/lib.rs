@@ -1,5 +1,8 @@
-use std::f64::{EPSILON, MIN_POSITIVE};
-use std::f64::consts::PI;
+#![no_std]
+
+use core::f64::{EPSILON, MIN_POSITIVE};
+use core::f64::consts::PI;
+use libm::F64Ext;
 
 // =============================================================================
 // Constants
@@ -197,7 +200,7 @@ pub fn invgammp(p: f64, a: f64) -> f64 {
         if p < 0.5 { 
             x = -x;
         }
-        1e-3_f64.max(a * (1f64 - 1f64 / (9f64 * a) - x / (3f64 * a.sqrt())).powi(3))
+        1e-3_f64.max(a * (1f64 - 1f64 / (9f64 * a) - x / (3f64 * a.sqrt())).powf(3 as f64))
     } else {
         t = 1f64 - a * (0.253 + a * 0.12);
         if p < t {
@@ -317,7 +320,7 @@ fn erfccheb(z: f64) -> f64 {
         d = ty * d - dd + COF[j];
         dd = tmp;
     }
-    t * (-z.powi(2) + 0.5 * (COF[0] + ty * d) - dd).exp()
+    t * (-z.powf(2f64) + 0.5 * (COF[0] + ty * d) - dd).exp()
 }
 
 /// Inverse of complementary error function
@@ -334,7 +337,7 @@ pub fn inverfc(p: f64) -> f64 {
     let mut x = -0.70711 * ((2.30753 + t * 0.27061) / (1f64 + t * (0.99229 + t * 0.04481)) - t);
     for _j in 0 .. 2 {
         let err = erfc(x) - pp;
-        x += err / (1.12837916709551257 * (-x.powi(2)).exp() - x * err);
+        x += err / (1.12837916709551257 * (-x.powf(2f64)).exp() - x * err);
     }
     if p < 1f64 {
         x
@@ -420,7 +423,7 @@ fn betaiapprox(a: f64, b: f64, x: f64) -> f64 {
     let mu = a / (a + b);
     let lnmu = mu.ln();
     let lnmuc = (1f64 - mu).ln();
-    let mut t = (a * b / ((a + b).powi(2) * (a + b + 1f64))).sqrt();
+    let mut t = (a * b / ((a + b).powf(2f64) * (a + b + 1f64))).sqrt();
     let xu = if x > a / (a + b) {
         if x >= 1f64 { return 1f64; }
         1f64.min((mu + 10f64 * t).max(x + 5f64 * t))
@@ -456,7 +459,7 @@ pub fn invbetai(p: f64, a: f64, b: f64) -> f64 {
         t = (-2f64 * pp.ln()).sqrt();
         x = (2.30753 + t * 0.27061) / (1f64 + t * (0.99229 + t * 0.04481)) - t;
         if p < 0.5 { x = -x; }
-        let al = (x.powi(2) - 3f64) / 6f64;
+        let al = (x.powf(2f64) - 3f64) / 6f64;
         let h = 2f64 / (1f64 / (2f64 * a - 1f64) + 1f64 / (2f64 * b - 1f64));
         let w = (x * (al + h).sqrt() / h) - (1f64 / (2f64 * b - 1f64) - 1f64 / (2f64 * a - 1f64)) * (al + 5f64 / 6f64 - 2f64 / (3f64 * h));
         x = a / (a + b * (2f64 * w).exp());
